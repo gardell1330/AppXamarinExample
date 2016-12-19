@@ -35,7 +35,7 @@ namespace XamarinFormsOIDCSample.Client.Views
         public int logout_at { get; set; }        
     }
 
-    
-
-    
+    public class Contacts : Profile
+    {
+    }
 }

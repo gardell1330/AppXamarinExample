@@ -7,13 +7,15 @@ using System.Threading.Tasks;
 using Xamarin.Forms;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 
 namespace XamarinFormsOIDCSample.Client.Views
 {
     class ListContacts : ContentPage
     {
         private ActivityPageViewModel ViewModel { get; set; }
-        public GroupedContacts ListaContactos { get; set; }
+        public ObservableCollection<Contacts> ListaContactos { get; set; }
+        public ListView ListViewContactos { get; set; }
         public Profile Account { get; set; }
         public Label UserName { get; set; }
         public ActivityIndicator Loading { get; set; }
@@ -40,12 +42,14 @@ namespace XamarinFormsOIDCSample.Client.Views
                 TextColor = Color.White,
                 HorizontalOptions = LayoutOptions.StartAndExpand,
                 VerticalOptions = LayoutOptions.StartAndExpand
-            };            
+            };
+
+            ListViewContactos = new ListView();
 
             Content = new StackLayout {
                 Padding = 60,
                 Spacing = 10,
-                Children = { Loading, UserName,  }
+                Children = { Loading, UserName, ListViewContactos  }
             };
 
             Loading.SetBinding(ActivityIndicator.IsVisibleProperty, "IsBusy");
@@ -74,10 +78,38 @@ namespace XamarinFormsOIDCSample.Client.Views
                     var idplayer = App.PlayerId;
                     var responseData = JsonConvert.DeserializeObject<Profile>(item["data"][idplayer.ToString()].ToString());
                     Account = responseData;
-                    ViewModel.IsBusy = false;
+                    await Task.Factory.StartNew(() => GetListaContactos());
+                    ViewModel.IsBusy = false;                    
+                    ListViewContactos.ItemsSource = ListaContactos;
                     UserName.SetValue(Label.TextProperty, Account.nickname);
                 }                
             }            
+        }
+
+        private async Task  GetListaContactos()
+        {
+            var url = "https://api.worldoftanks.com/wot/account/info/";
+            var contactGroup = Account.@private.grouped_contacts.ungrouped;
+            var contacts = "";
+            foreach (var item in contactGroup)
+            {
+                contacts += item.ToString() + ",";
+            }
+
+            var sBuilder = $"{url}?application_id=715ee34f2bb9baeb9a825cf74b717e75&access_token={App.Token}&language=es&account_id={contacts}&fields={WebUtility.UrlEncode("nickname,account_id,ban_info,clan_id,last_battle_time,logout_at,private.grouped_contacts")}";
+
+            using (HttpClient client = new HttpClient())
+            using (HttpResponseMessage response = await client.GetAsync(sBuilder))
+            using (HttpContent content = response.Content)
+            {
+                string result = await content.ReadAsStringAsync();
+
+                // ... Display the result.
+                if (result != null)
+                {
+                    var item = JObject.Parse(result);
+                }
+            }
         }
     }
 }
