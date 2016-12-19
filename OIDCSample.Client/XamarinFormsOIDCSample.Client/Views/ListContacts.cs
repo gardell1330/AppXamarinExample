@@ -12,6 +12,7 @@ namespace XamarinFormsOIDCSample.Client.Views
 {
     class ListContacts : ContentPage
     {
+        private ActivityPageViewModel ViewModel { get; set; }
         public GroupedContacts ListaContactos { get; set; }
         public Profile Account { get; set; }
         public Label UserName { get; set; }
@@ -19,12 +20,15 @@ namespace XamarinFormsOIDCSample.Client.Views
 
         public ListContacts()
         {
+            ViewModel = new ActivityPageViewModel();
+            BindingContext = ViewModel;
+
             Task.Factory.StartNew(() => GetAccount());
 
             Loading = new ActivityIndicator
             {
                 HorizontalOptions = LayoutOptions.CenterAndExpand,
-                Color = Color.Black,
+                Color = Color.White,
                 Opacity=5,
                 IsVisible = false
             };
@@ -32,23 +36,27 @@ namespace XamarinFormsOIDCSample.Client.Views
             UserName = new Label
             {                
                 FontSize = 16,
-                HorizontalOptions = LayoutOptions.Center,
-                VerticalOptions = LayoutOptions.Center
-            };
+                Text= "Bienvenido",
+                TextColor = Color.White,
+                HorizontalOptions = LayoutOptions.StartAndExpand,
+                VerticalOptions = LayoutOptions.StartAndExpand
+            };            
+
             Content = new StackLayout {
                 Padding = 60,
                 Spacing = 10,
-                Children = { UserName, Loading }
+                Children = { Loading, UserName,  }
             };
 
-            Loading.IsRunning = true;
-            Loading.IsVisible = true;
+            Loading.SetBinding(ActivityIndicator.IsVisibleProperty, "IsBusy");
+            Loading.SetBinding(ActivityIndicator.IsRunningProperty, "IsBusy");
+
         }
 
         
-        private async Task GetAccount()
+        internal async Task GetAccount()
         {
-                        
+            ViewModel.IsBusy = true;
             var url = "https://api.worldoftanks.com/wot/account/info/";            
             var sBuilder = $"{url}?application_id=715ee34f2bb9baeb9a825cf74b717e75&access_token={App.Token}&language=es&account_id={App.PlayerId}&extra=private.grouped_contacts&fields={WebUtility.UrlEncode("nickname,account_id,ban_info,clan_id,last_battle_time,logout_at,private.grouped_contacts")}";
 
@@ -66,13 +74,10 @@ namespace XamarinFormsOIDCSample.Client.Views
                     var idplayer = App.PlayerId;
                     var responseData = JsonConvert.DeserializeObject<Profile>(item["data"][idplayer.ToString()].ToString());
                     Account = responseData;
-
-                    Loading.IsRunning = true;
-                    Loading.IsVisible = true;
-
-                    UserName.Text += Account.nickname;                    
-                }
-            }
+                    ViewModel.IsBusy = false;
+                    UserName.SetValue(Label.TextProperty, Account.nickname);
+                }                
+            }            
         }
     }
 }
