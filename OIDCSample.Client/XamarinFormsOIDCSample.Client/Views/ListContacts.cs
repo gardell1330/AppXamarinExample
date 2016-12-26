@@ -14,7 +14,7 @@ namespace XamarinFormsOIDCSample.Client.Views
     class ListContacts : ContentPage
     {
         private ActivityPageViewModel ViewModel { get; set; }
-        public ObservableCollection<Contacts> ListaContactos { get; set; }
+        public ObservableCollection<object> ListaContactos { get; set; }
         public ListView ListViewContactos { get; set; }
         public Profile Account { get; set; }
         public Label UserName { get; set; }
@@ -40,14 +40,16 @@ namespace XamarinFormsOIDCSample.Client.Views
                 FontSize = 16,
                 Text= "Bienvenido",
                 TextColor = Color.White,
-                HorizontalOptions = LayoutOptions.StartAndExpand,
-                VerticalOptions = LayoutOptions.StartAndExpand
+                HorizontalOptions = LayoutOptions.Start,
+                VerticalOptions = LayoutOptions.Start
             };
 
-            ListViewContactos = new ListView();
+            ListViewContactos = new ListView {
+                HorizontalOptions= LayoutOptions.StartAndExpand
+            };
 
             Content = new StackLayout {
-                Padding = 60,
+                Padding = 10,
                 Spacing = 10,
                 Children = { Loading, UserName, ListViewContactos  }
             };
@@ -78,9 +80,7 @@ namespace XamarinFormsOIDCSample.Client.Views
                     var idplayer = App.PlayerId;
                     var responseData = JsonConvert.DeserializeObject<Profile>(item["data"][idplayer.ToString()].ToString());
                     Account = responseData;
-                    await Task.Factory.StartNew(() => GetListaContactos());
-                    ViewModel.IsBusy = false;                    
-                    ListViewContactos.ItemsSource = ListaContactos;
+                    await Task.Factory.StartNew(() => GetListaContactos());                    
                     UserName.SetValue(Label.TextProperty, Account.nickname);
                 }                
             }            
@@ -107,7 +107,15 @@ namespace XamarinFormsOIDCSample.Client.Views
                 // ... Display the result.
                 if (result != null)
                 {
-                    var item = JObject.Parse(result);
+                    var jObject = JObject.Parse(result);
+                    var listaContactos = new List<Profile>();
+                    foreach (var item in contactGroup)
+                    {
+                        var user = JsonConvert.DeserializeObject<Profile>(jObject["data"][item.ToString()].ToString());
+                        listaContactos.Add(user);                        
+                    }
+                    ViewModel.IsBusy = false;
+                    ListViewContactos.SetValue(ListView.ItemsSourceProperty, listaContactos);
                 }
             }
         }

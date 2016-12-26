@@ -32,7 +32,12 @@ namespace XamarinFormsOIDCSample.Client.Views
         public object clan_id { get; set; }
         public string nickname { get; set; }
         public object ban_info { get; set; }
-        public int logout_at { get; set; }        
+        public int logout_at { get; set; }
+
+        public override string ToString()
+        {
+            return nickname;
+        }
     }
 
     public class Contacts : Profile

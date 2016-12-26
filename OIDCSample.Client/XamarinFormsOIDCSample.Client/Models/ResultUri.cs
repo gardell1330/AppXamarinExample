@@ -12,7 +12,7 @@ namespace XamarinFormsOIDCSample.Client.Views
 
     public class data
     {
-        public Profile account { get; set; }        
+        public List<Profile> account { get; set; }        
     }
 
     public class meta
