@@ -10,7 +10,7 @@ namespace XamarinFormsOIDCSample.Client.Views
 {
     public partial class LoginView : ContentPage
     {
-        private AuthorizeResponse _authResponse;
+        public AuthorizeResponse _authResponse;
 
         public LoginView()
         {
@@ -35,10 +35,9 @@ namespace XamarinFormsOIDCSample.Client.Views
                 _authResponse = new AuthorizeResponse(tUrl);
 
                 App.Token= _authResponse.AccessToken;
-                App.PlayerId = Convert.ToInt32(_authResponse.Values["account_id"]);
-
-                Navigation.PushAsync(new ListContacts());
+                App.PlayerId = Convert.ToInt32(_authResponse.Values["account_id"]);                
             }
+            Navigation.PushAsync(new ListContacts());
         }
 
         private void GetIdToken(object sender, EventArgs e)
@@ -79,31 +78,5 @@ namespace XamarinFormsOIDCSample.Client.Views
             wvLogin.Source = authorizeUri;
             wvLogin.IsVisible = true;
         }
-
-        
-        //public static string DecodeToken(string token)
-        //{
-        //    var parts = token.Split('.');
-
-        //    string partToConvert = parts[1];
-        //    partToConvert = partToConvert.Replace('-', '+');
-        //    partToConvert = partToConvert.Replace('_', '/');
-        //    switch (partToConvert.Length % 4)
-        //    {
-        //        case 0:
-        //            break;
-        //        case 2:
-        //            partToConvert += "==";
-        //            break;
-        //        case 3:
-        //            partToConvert += "=";
-        //            break;
-        //    }
-
-        //    var partAsBytes = Convert.FromBase64String(partToConvert);
-        //    var partAsUTF8String = Encoding.UTF8.GetString(partAsBytes, 0, partAsBytes.Count());
-
-        //    return JObject.Parse(partAsUTF8String).ToString();
-        //}
     }
 }

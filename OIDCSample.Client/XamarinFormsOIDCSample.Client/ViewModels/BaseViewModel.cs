@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace XamarinFormsOIDCSample.Client
 {
@@ -26,6 +27,7 @@ namespace XamarinFormsOIDCSample.Client
         {
             var handler = PropertyChanged;
             if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
-        }
+        }        
+
     }
 }

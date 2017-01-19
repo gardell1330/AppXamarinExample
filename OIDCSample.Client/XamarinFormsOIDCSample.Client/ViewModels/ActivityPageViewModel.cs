@@ -1,4 +1,7 @@
-﻿namespace XamarinFormsOIDCSample.Client
+﻿using System;
+using System.Threading.Tasks;
+
+namespace XamarinFormsOIDCSample.Client
 {
     public class ActivityPageViewModel : BaseViewModel
     {
@@ -14,5 +17,7 @@
                 OnPropertyChanged();
             }
         }
+
+        
     }
 }
