@@ -9,74 +9,29 @@ using Xamarin.Forms;
 namespace XamarinFormsOIDCSample.Client.Views
 {
     public partial class LoginView : ContentPage
-    {
-        public AuthorizeResponse _authResponse;
+    {        
+        public LoginViewModel vm { get; set; }
 
         public LoginView()
         {
             InitializeComponent();
-            btnGetIdToken.Clicked += GetIdToken;
-            btnGetAccessToken.Clicked += GetAccessToken;
-            btnGetIdTokenAndAccessToken.Clicked += GetIdTokenAndAccessToken;
+            vm = new LoginViewModel();
+            BindingContext = vm;
+                        
             wvLogin.Navigating += WvLogin_Navigating;
+            wvLogin.Navigated += WvLogin_Navigated;
+            wvLogin.Source = vm.StartFlow("id_token", "openid profile");                        
+            wvLogin.IsVisible = true;
+        }
+
+        private void WvLogin_Navigated(object sender, WebNavigatedEventArgs e)
+        {
+            wvLogin.Eval(vm.ApplyStyle(e));
         }
 
         private void WvLogin_Navigating(object sender, WebNavigatingEventArgs e)
-        {
-            if (e.Url.Contains("https://developers.wargaming.net/reference/all/wot/auth/login/?"))
-            {
-                wvLogin.IsVisible = false;
-                var tUrl = e.Url.ToString();
-                if (tUrl.Substring(tUrl.IndexOf('?') + 1, 1) == "&")
-                {
-                    tUrl=tUrl.Remove(tUrl.IndexOf('?') + 1,1);
-                }
-
-                _authResponse = new AuthorizeResponse(tUrl);
-
-                App.Token= _authResponse.AccessToken;
-                App.PlayerId = Convert.ToInt32(_authResponse.Values["account_id"]);                
-            }
-            Navigation.PushAsync(new ListContacts());
-        }
-
-        private void GetIdToken(object sender, EventArgs e)
-        {
-            // id_tokens don't contain resource scopes, only ask for
-            // openid and profile
-            StartFlow("id_token", "openid profile");
-        }
-
-        private void GetAccessToken(object sender, EventArgs e)
-        {
-            // access tokens are for resource authorization, only ask for
-            // resource scopes
-            StartFlow("token", "read write");
-        }
-
-        private void GetIdTokenAndAccessToken(object sender, EventArgs e)
-        {
-            // when asking both, we can ask for identity-related scopes
-            // as well as resource scopes
-            StartFlow("id_token token", "openid profile read write");
-        }
-
-        public void StartFlow(string responseType, string scope)
-        {
-            var authorizeRequest = new AuthorizeRequest("https://api.worldoftanks.com/wot/auth/login/");
-
-            // dictionary with values for the authorize request
-            var dic = new Dictionary<string, string>();
-            dic.Add("application_id", "715ee34f2bb9baeb9a825cf74b717e75");
-            dic.Add("display", "page");
-            dic.Add("expires_at", "1482537600");
-            dic.Add("nofollow", "0");
-            dic.Add("redirect_uri", "https://developers.wargaming.net/reference/all/wot/auth/login/");
-
-            var authorizeUri = authorizeRequest.Create(dic);
-
-            wvLogin.Source = authorizeUri;
-            wvLogin.IsVisible = true;
-        }
+        {            
+            vm.LoginUser(e, this);            
+        }        
     }
 }
